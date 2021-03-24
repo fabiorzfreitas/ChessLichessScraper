@@ -12,6 +12,8 @@ setLocal enabledelayedexpansion
 echo.
 echo.
 echo.
+echo All input must be lowcase!
+echo.
 echo You can skip the input bellow by pressing Enter
 echo.
 echo.
@@ -28,32 +30,10 @@ curl https://lichess.org/api/games/user/%lichess% >> Games.pgn
 :Chess
 if not defined chess goto :End
 
-curl https://api.chess.com/pub/player/%chess%/games/archives > input.txt
-
-for /f "delims=" %%a in (input.txt) do (
-    for %%b in (%%a) do (
-	set string=%%b
-	set "string=!string:[=,!"
-    set "string=!string:]=,!" 
-	echo !string! >> replaced.txt
-	)
+(for /f "usebackq tokens=2 delims=[]" %%g in (`curl https://api.chess.com/pub/player/%chess%/games/archives`) do (
+    for %%h In (%%g) do curl "%%~h/pgn" >> Games.pgn
+    )
 )
-
-for /f "delims=" %%c in (replaced.txt) do (
-    for %%d in (%%c) do (
-	echo %%~d >> echo.txt
-	)
-)
-
-for /f %%e in (echo.txt) do echo curl %%~e/pgn|find "." >> curllist.cmd
-
-call curllist.cmd >> Games.pgn
-
-del input.txt
-del replaced.txt
-del echo.txt
-del curllist.cmd
-
 
 :End
 exit
